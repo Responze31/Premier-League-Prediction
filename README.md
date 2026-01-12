@@ -1,96 +1,80 @@
-# Premier League Prediction (ML + Monte Carlo)
+# Premier League Prediction
 
-This is a football prediction project I made using real Premier League match data and a simple neural network model.  
-The goal is to:
+Neural network + Monte Carlo simulation for predicting Premier League match outcomes and final standings.
 
-- train a model to predict match outcomes (**Home win / Away win / Draw**)
-- use those probabilities to **simulate the rest of the season** with Monte Carlo
-- output a **predicted final league table** and rough **title chances**
+## Features
 
-I’m a 2nd year university student, so this project is mainly for learning + showing my workflow.
+- Match outcome prediction (Home/Away/Draw)
+- Temperature-scaled probability calibration
+- Monte Carlo season simulation (1000+ runs)
+- Final league table with title probabilities
 
----
+## Tech Stack
 
-## What it does
+PyTorch, scikit-learn, pandas, scipy
 
-### 1) Pull match data (football-data.org API)
-- Downloads Premier League match results by season
-- Builds a dataset of finished matches
+## Quick Start
 
-### 2) Feature engineering (basic but useful)
-For each match, it creates features like:
-- recent **home team home form** (goals for/against)
-- recent **away team away form**
-- team strength estimates from historical results:
-  - points per game (PPG)
-  - goal difference per game (GD)
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 3) Train a neural network classifier
-- Input: engineered features
-- Output: probability of **Home / Away / Draw**
-- Uses a **time-based train/validation split** (train on earlier matches, validate on later matches)
-- Uses **StandardScaler** (fit on train only to avoid leakage)
+2. Create `.env` file with your [football-data.org](https://www.football-data.org/) API token:
+   ```
+   TOKEN=your_api_token_here
+   ```
 
-### 4) Calibrate probabilities
-I use **temperature scaling** to make predicted probabilities less overconfident and improve log-loss.
+3. Run `notebooks/footballPred.ipynb`
 
-### 5) Monte Carlo season simulation
-For remaining fixtures:
-- sample outcomes based on model probabilities
-- add a bit of randomness (“match noise”) and optional momentum (“form”) as a simple heuristic
-- repeat many times (ex: 1000 simulations)
-- average points + count how often each team finishes 1st
+## How It Works
 
----
+### Features
+- Rolling home/away form (goals for/against, last 5 games)
+- Team strength (PPG, goal difference)
 
-## Results (what to expect)
-- You��ll see metrics like accuracy + log-loss on the validation set
-- A printed final table showing:
-  - current points
-  - projected points
-  - estimated title %
+### Model
+- 3-layer MLP: 128 → 64 → 32 → 3 (with dropout)
+- 80/20 time-based train/val split
+- Temperature scaling for calibration
 
-These results will change slightly each time because the season simulation is random.
+### Simulation
+- Sample from calibrated probabilities
+- Add noise (σ=0.20) and momentum effects
+- Aggregate over 1000 simulations
 
----
+## Performance
 
-## How to run (Colab recommended)
+- Accuracy: ~50% (baseline ~45%)
+- Log-loss: ~1.05
 
-### Option A: Google Colab
-1. Open the notebook in Colab
-2. Add your API key in **Colab Secrets**:
-   - Key name: `TOKEN`
-   - Value: your football-data.org API token
-3. Run all cells
+## Outputs
 
-### Option B: Local (optional)
-You’ll need Python with:
-- numpy, pandas, requests
-- torch
-- scikit-learn
-- matplotlib, seaborn
-- scipy
+Generated in `outputs/`:
+- `predicted_table_[timestamp].csv` - Final standings
+- `metrics_[timestamp].json` - Model metrics
+- `confusion_matrix_[timestamp].png`
+- `calibration_[timestamp].png`
 
-Then set an environment variable / secret for your token and run the notebook.
+## Project Structure
 
----
+```
+├── notebooks/footballPred.ipynb  # Main notebook
+├── src/
+│   ├── config.py
+│   ├── data_loader.py
+│   ├── features.py
+│   └── model.py
+├── outputs/
+└── requirements.txt
+```
 
-## Notes / Limitations
-- This is not meant to be a perfect betting model (football is chaotic)
-- Draws are harder to predict than home/away wins
-- The Monte Carlo “noise” + “form boost” is a **simple heuristic**, mainly to make simulations more realistic
+## Limitations
 
----
+- No player-level data or injury info
+- Draws are hardest to predict
+- Single season validation set
 
-## Future improvements (ideas)
-- add more seasons for training
-- include team rating systems (Elo) or rolling xG stats (if available)
-- better handling of class imbalance (draws)
-- compare against classic models (logistic regression, XGBoost)
-- save the model + scaler for reuse
+## Data
 
----
-
-## Credits / Data
-- Match data: https://www.football-data.org/
-- Built with: PyTorch + scikit-learn
+Match data from [football-data.org](https://www.football-data.org/)
