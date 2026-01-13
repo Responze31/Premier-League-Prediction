@@ -8,10 +8,11 @@ Neural network + Monte Carlo simulation for predicting Premier League match outc
 - Temperature-scaled probability calibration
 - Monte Carlo season simulation (1000+ runs)
 - Final league table with title probabilities
+- Data inspection and visualization throughout analysis
 
 ## Tech Stack
 
-PyTorch, scikit-learn, pandas, scipy
+PyTorch, scikit-learn, pandas, scipy, matplotlib, seaborn
 
 ## Quick Start
 
